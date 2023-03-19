@@ -20,6 +20,8 @@ async fn main() -> Result<()> {
         .with_node(&node_url)? // Insert your node URL here
         .finish()?;
 
+    // Se contruye una instancia de la variante de SecretManager del tipo mnemotecnico
+    // proporcionandole la frase mnemotecnica de 24 palabras.
     let secret_manager =
         SecretManager::try_from_mnemonic(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
 
