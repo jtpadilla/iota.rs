@@ -1,0 +1,14 @@
+**/target
+**/*.rs.bk
+.idea
+.vscode
+.DS_Store
+book
+.env
+*.ipynb
+address.json
+prepared_transaction.json
+signed_transaction.json
+iota.rs.log
+*.stronghold
+client.log

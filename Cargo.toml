@@ -1,0 +1,24 @@
+[workspace]
+resolver = "2"
+members = [
+	"client",
+	"client/bindings/java/lib/native",
+	"client/bindings/nodejs",
+	"client/bindings/python",
+	"client/bindings/wasm",
+	"pow",
+	"types",
+]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+
+[profile.production]
+codegen-units = 1
+inherits = "release"
+lto = true
+panic = "abort"
+strip = "symbols"
