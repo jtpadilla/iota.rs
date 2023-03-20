@@ -15,7 +15,12 @@ use iota_client::{Client, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    println!("Primer mensaje");
+
+
     let mnemonic = Client::generate_mnemonic()?;
+    println!("Segundo mensaje");
+    println!("Tercer mensaje");
     //let mnemonic = iota_client::utils::generate_mnemonic()?;
 
     println!("Mnemonic: {mnemonic}");
