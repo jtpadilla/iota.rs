@@ -27,20 +27,22 @@ async fn main() -> Result<()> {
 
     // Generate addresses with default account index and range
     let addresses = client.get_addresses(&secret_manager).finish().await?;
-
-    println!("List of generated public addresses:\n{addresses:#?}\n");
+    println!("Lista de direcciones publicas generadas:\n{addresses:#?}\n");
 
     // Generate addresses with custom account index and range
+    //
+    // Internamente genera un 'GetAddressesBuilder' el cual es utilizado para generar las direcciones.
     let addresses = client
         .get_addresses(&secret_manager)
         .with_account_index(0)
         .with_range(0..4)
         .finish()
         .await?;
-
-    println!("List of generated public addresses:\n{addresses:#?}\n");
+    println!("Lista de direcciones publicas generadas (0..4):\n{addresses:#?}\n");
 
     // Generate internal addresses with custom account index and range
+    //
+    // En este caso al builder se le indica que seran direcciones internas..
     let addresses = client
         .get_addresses(&secret_manager)
         .with_account_index(0)
@@ -48,12 +50,15 @@ async fn main() -> Result<()> {
         .with_internal_addresses(true)
         .finish()
         .await?;
-
-    println!("List of generated internal addresses:\n{addresses:#?}\n");
+    println!("Lista de direcciones publicas generadas (0..4):\n{addresses:#?}\n");
 
     // Generating addresses with `client.get_addresses(&secret_manager)`, will by default get the bech32_hrp (Bech32
     // human readable part) from the node info, generating it "offline" requires setting it with
     // `with_bech32_hrp(bech32_hrp)`
+    //
+    // En esta caso no se utiliza un metodo del cliente para obtener el 'iota_client::api::address::GetAddressesBuilder'
+    // porque se instancia directamente aunque sera necesario proporcionar el bech32_hrm que se obtendra igualmente
+    // desde el cliente.
     let addresses = GetAddressesBuilder::new(&secret_manager)
         .with_bech32_hrp(client.get_bech32_hrp().await?)
         .with_account_index(0)
@@ -61,7 +66,7 @@ async fn main() -> Result<()> {
         .finish()
         .await?;
 
-    println!("List of offline generated public addresses:\n{addresses:#?}\n");
+    println!("Lista de direcciones publicas (offline) generadas (0..4):\n{addresses:#?}\n");
 
     Ok(())
 }
