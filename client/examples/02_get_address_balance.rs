@@ -24,6 +24,7 @@ async fn main() -> Result<()> {
     let client = Client::builder()
         .with_node(&node_url)?
         .finish()?;
+    println!("Cliente:\n{client:#?}\n");
 
     // Se obtiene la string con 24 palabras (el nmotecnico) desde una variable de entorno.
     let mnemonic = std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap();
@@ -39,10 +40,11 @@ async fn main() -> Result<()> {
     // 'iota_client::secret::SecretManager' se genera la primera direccion (solo se pide la primera)
     let addresses = client
         .get_addresses(&secret_manager)
-        .with_account_index(0)
-        .with_range(0..1)
+//        .with_account_index(0)
+//        .with_range(0..1)
         .finish()
         .await?;
+    println!("Direcciones:\n{addresses:#?}\n");
 
     // Se obtienen los identificadores de las salida que pueden ser controladas por la direccion sin
     // restricciones de bloqueo.
@@ -59,6 +61,7 @@ async fn main() -> Result<()> {
     let output_ids_response = client
         .basic_output_ids(query_parameters)  
         .await?;
+    println!("Ids de las salida de la primera direccion:\n{output_ids_response:#?}\n");
 
     // Mediante los ids se extrae las salidas.
     let outputs_responses = client.get_outputs(output_ids_response.items).await?;
