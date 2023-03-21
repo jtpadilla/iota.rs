@@ -14,43 +14,59 @@ use iota_client::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // This example uses dotenv, which is not safe for use in production
+
     dotenv::dotenv().ok();
 
+    // Se obtiene el URL del nodo desde una variable de entorno
     let node_url = std::env::var("NODE_URL").unwrap();
 
-    // Create a client instance
+    // Se crea una instancia del cliente (mediante un builder).
     let client = Client::builder()
-        .with_node(&node_url)? // Insert your node URL here
+        .with_node(&node_url)?
         .finish()?;
 
-    let secret_manager =
-        MnemonicSecretManager::try_from_mnemonic(&std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap())?;
+    // Se obtiene la string con 24 palabras (el nmotecnico) desde una variable de entorno.
+    let mnemonic = std::env::var("NON_SECURE_USE_OF_DEVELOPMENT_MNEMONIC_1").unwrap();
 
-    let token_supply = client.get_token_supply().await?;
+    // Se crea una instancia de SecretManager 'MnemonicSecretManager.
+    let secret_manager_mnemonic =
+        MnemonicSecretManager::try_from_mnemonic(&mnemonic)?;
 
-    // Generate the first address
+    // Se crea la variante de 'iota_client::secret::SecretManager' de tipo 'iota_client::secret::mnemonic::Mnemonic'
+    let secret_manager = SecretManager::Mnemonic(secret_manager_mnemonic);
+
+    // Mediante un 'iota_client::api::address::GetAddressesBuilder' al cual se le proporciona el
+    // 'iota_client::secret::SecretManager' se genera la primera direccion (solo se pide la primera)
     let addresses = client
-        .get_addresses(&SecretManager::Mnemonic(secret_manager))
+        .get_addresses(&secret_manager)
         .with_account_index(0)
         .with_range(0..1)
         .finish()
         .await?;
 
-    // Get output ids of outputs that can be controlled by this address without further unlock constraints
+    // Se obtienen los identificadores de las salida que pueden ser controladas por la direccion sin
+    // restricciones de bloqueo.
+    //
+    // Como hay que transferir la propiedad de la direccion por legibilidad se clona la posicion del array
+    // en su propia variable.
+    let address = addresses[0].clone();
+    let query_parameters = vec![
+        QueryParameter::Address(address),
+        QueryParameter::HasExpiration(false),
+        QueryParameter::HasTimelock(false),
+        QueryParameter::HasStorageDepositReturn(false),
+    ];
     let output_ids_response = client
-        .basic_output_ids(vec![
-            QueryParameter::Address(addresses[0].clone()),
-            QueryParameter::HasExpiration(false),
-            QueryParameter::HasTimelock(false),
-            QueryParameter::HasStorageDepositReturn(false),
-        ])
+        .basic_output_ids(query_parameters)  
         .await?;
 
-    // Get the outputs by their id
+    // Mediante los ids se extrae las salidas.
     let outputs_responses = client.get_outputs(output_ids_response.items).await?;
 
-    // Calculate the total amount and native tokens
+    // Obtiene el suministro de tokens del nodo al que nos estamos conectando.
+    let token_supply = client.get_token_supply().await?;
+
+    // Calcula el importe total de los tockens nativos.
     let mut total_amount = 0;
     let mut total_native_tokens = NativeTokensBuilder::new();
     for output_response in outputs_responses {
@@ -62,11 +78,14 @@ async fn main() -> Result<()> {
         total_amount += output.amount();
     }
 
+    // Se muestra el resultado.
     println!(
         "Outputs controlled by {} have: {:?}i and native tokens: {:?}",
         addresses[0],
         total_amount,
         total_native_tokens.finish_vec()?
     );
+
     Ok(())
+
 }
