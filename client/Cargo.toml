@@ -331,3 +331,9 @@ path = "examples/output/nft.rs"
 [[example]]
 name = "participation"
 required-features = [ "participation" ]
+
+###################
+
+[[example]]
+name = "01_get_info"
+path = "examples/propios/01_get_info.rs"
